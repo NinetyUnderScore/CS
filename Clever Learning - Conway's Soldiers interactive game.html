@@ -1,0 +1,176 @@
+<html>
+	<head>
+		<meta content="text/html;charset=utf-8" http-equiv="Content-Type">
+		<meta content="utf-8" http-equiv="encoding">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+	</head>
+	<body>
+		<div id="parent">
+			<canvas id="myCanvas" onmousedown="gridClicked(event)" width="1920" height="1080"></canvas>
+			<button id="rightchild" onmousedown="buttonClicked(event)">toggle grid</button>	
+			</div>
+		</div>
+	   <script>
+		  // Conway's Soldiers script
+		  
+		  // Shows interactive grid according to rules of Conway's Soldiers
+		  
+		  // By Mark Bensilum, Clever Learning
+		  // 20 June 2019
+		  
+		  // Set up variables
+		  let xMax = 100;
+		  let yMax = 100;
+		  let boxSize = 20;
+		  let selected = false;
+		  let selectedX, selectedY;
+		  let lastmove = [];
+		  let cells = new Array(xMax);
+		  let gap = 0;
+		  for (i = 0; i < xMax; i++) {
+			cells[i] = new Array(yMax);
+		  }
+		  
+		  initialiseGrid();
+		  drawGrid();
+		  
+		  function initialiseGrid() {
+		  // Set up array with initial values
+		  // 0=empty cell, 1=cell with tile, 2=selected cell
+		  
+		  for (j = 0; j < yMax; j++) {
+			for (i = 0; i < xMax; i++) {
+			   if (j > 10) {
+				  cells[i][j] = 1;
+				  }
+				  else {
+				  cells[i][j] = 0}
+				  }
+			}	
+		  }
+		  
+		  function buttonClicked(event){
+			  if (gap == 1) {
+				  gap = 0;
+				  drawGrid();
+			  }
+			  else {
+				  gap = 1;
+				  drawGrid();
+			  }
+		  }
+
+		  function drawGrid() {
+			  // Draw grid on canvas according to values in array
+			  var c = document.getElementById("myCanvas");
+			  var ctx = c.getContext("2d");
+		  
+			  
+			  for (y = 0; y < yMax; y++) {
+				for (x = 0; x < xMax; x++) {
+					ctx.fillStyle = "#FFFFFF";
+					ctx.fillRect(x * boxSize, y * boxSize, boxSize, boxSize);
+					  switch(cells[x][y]){
+						  case 0:
+							  ctx.fillStyle = "#D3D3D3";
+							  break;
+						  case 1:
+							  ctx.fillStyle = "#A9A9A9";
+							  break;
+						  case 2:
+							  ctx.fillStyle = "#404040";
+					  }
+				   ctx.fillRect(x * boxSize, y * boxSize, boxSize - gap, boxSize - gap);
+				}
+			  }
+		  }
+		  
+		  function gridClicked(event) {
+			  // Canvas clicked by user
+			  // Check status of clicked cell and update array
+			  
+			  var container = myCanvas.getBoundingClientRect();
+			  
+			  var xCoord = event.clientX;
+			  var yCoord = event.clientY;
+		  
+			  var x = parseInt((xCoord - container.left) / boxSize);
+			  var y = parseInt((yCoord - container.top) / boxSize);
+			  
+			  
+			  if (x >= xMax || y >= yMax) {
+				  return 0;
+			  }
+			  
+			  switch(cells[x][y]) {
+				  case 0:
+					  if (selected) {
+						  // Tile is selected and empty cell just clicked
+						  // Check cell just clicked is exactly two places away (not diagonal)
+						  if ((y == selectedY && Math.abs(x - selectedX) == 2) || ((x == selectedX && Math.abs(y - selectedY) == 2))) {
+							  // Check cell between this and previously selected one has tile on it
+							  if (cells[(x + selectedX) / 2][(y + selectedY) / 2] == 1) {
+								  // Move selected tile and remove jumped tile
+								  for (var i = 0; i < 100; i++)
+								  lastmove[i] = cells[i].slice();
+								  cells[x][y] = 1;
+								  cells[selectedX][selectedY] = 0;
+								  cells[(x + selectedX) / 2][(y + selectedY) / 2] = 0;
+								  selected = false;
+							  }
+						  }
+					  }
+					  break;
+				  case 1:
+					  // New cell selected
+					  if (!selected) {
+						  cells[x][y] = 2;
+						  selected = true;
+						  selectedX = x;
+						  selectedY = y;
+					  }
+					  break;
+				  case 2:
+					  // Selected cell clicked - deselect it
+					  cells[x][y] = 1;
+					  selected = false;
+					  break;
+			  }
+			  drawGrid();
+			  
+		  }
+		  document.addEventListener('keydown', function(event) {
+					 if(event.keyCode == 90) {
+					  for (var i = 0; i < 100; i++)
+						   cells[i] = lastmove[i].slice();
+					  cells[selectedX][selectedY] = 1;
+					  drawGrid();
+					 }
+			  });
+	   </script>
+	</body>
+	<style>
+	body{
+		margin: 0;
+	}
+	#parent{
+		 width:100%; 
+ 		 height:100%; 
+ 		 position:relative;
+ 		 white-space: nowrap;
+ 		 overflow: hidden;
+	}
+
+	#rightchild{
+		top: 0;
+ 		width:100px; 
+		height:50px;
+ 		right:0; 
+ 		bottom: 0;
+ 		background:rgb(194, 194, 194); 
+ 		position:absolute;
+	}
+	</style>
+ </html>
+ 
+ 
